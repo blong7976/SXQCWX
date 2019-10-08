@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ECharts</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.2.1/echarts.min.js"></script>
+</head>
+<body>
+    <!-- 为ECharts准备一个具备大小（宽高）的Dom -->
+    <div id="main" style="width: 100%;height:90vh"></div>
+    <script type="text/javascript">
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+ 
+        var colors = ['#66CDAA',  '#B8860B','#FF9080'];
+
+var xData = function() {
+    var data = [];
+    for (var i = 17; i < 24; i++) {
+        data.push("9月"+i+"日");
+    }
+    return data;
+}();
+option = {
+    title: {
+        text: '',
+        left:'45%',
+        top:'10%',
+        textStyle:{
+             fontSize: '15' ,
+             color: "#fff"
+        }
+    },
+    "tooltip": {
+        "trigger": "axis",
+        "axisPointer": {
+            "type": "shadow",
+            textStyle: {
+                color: "#fff"
+            }
+        },
+    },
+    grid: {
+        top:'15%',
+        bottom:'15%',
+        left:'10%',
+        right:'10%',
+    },   
+    legend: {
+        data:['上传企业数','记录条数'],
+        align: 'right',
+         top:'2%',
+         right:'10%',
+        textStyle:{
+            color:'#FFFFFF'
+        }
+        
+    },
+     "calculable": true,
+    "xAxis": [{
+        "type": "category",
+        "axisLine": {
+            show:false,
+            lineStyle: {
+                color: '#000'
+            }
+        },
+        "splitLine": {
+            "show": false
+        },
+        "axisTick": {
+            "show": false
+        },
+        "splitArea": {
+            "show": false
+        },
+        "axisLabel": {
+            "interval": 0,
+            textStyle:{
+                fontSize:12,
+                color: '#ffffff'
+            }
+        },
+        "data": xData,
+    }],
+    yAxis: [
+        {
+            type: 'value',
+            name: '',
+            min: 0,
+            max: 3297,
+            position: 'left',
+            axisLine: {
+                lineStyle: {
+                   
+                    color: '#ffffff'
+                }
+            },
+            axisLabel: {
+                formatter: '{value} '
+            },
+            splitLine: {
+                lineStyle: {
+                    type: 'dashed',
+                    color: '#385B71'
+                }
+            }
+        },
+        {
+            type: 'value',
+            name: '',
+            position: 'right',
+            axisLine: {
+               
+                lineStyle: {
+                    color: '#ffffff'
+                }
+            },
+            axisLabel: {
+                formatter: '{value}'
+            },
+            splitLine: {
+                lineStyle: {
+                    type: 'dashed',
+                    color: '#385B71'
+                }
+            }
+        }
+    ],
+    series: [
+        {"name": "上传企业数",
+            "type": "bar",
+            "stack": "总量",
+            "barMaxWidth": 15,
+            "barGap": "10%",
+            "itemStyle": {
+                "normal": {
+                   "color": "#06a7ef",
+                    "label": {
+                        "show": true,
+                        "textStyle": {
+                            "color": "#fff"
+                        },
+                        "position": "insideTop",
+                        formatter: function(p) {
+                            return p.value > 0 ? (p.value) : '';
+                        }
+                    },
+                    barBorderRadius:[10,10,0,0] 
+                }
+                
+            },
+            data:[880 ,978,937,1029,852,767,931]
+            
+        },
+
+        {
+        name:'记录条数',
+        yAxisIndex: 1,
+        symbolSize:10,
+        symbol:'circle',
+        type:'line',
+        "itemStyle": {
+            "normal": {
+                "color": "rgba(252,230,48,1)",
+                "barBorderRadius": 0,
+                "label": {
+                    "show": true,
+                    "position": "top",
+                    formatter: function(p) {
+                        return p.value > 0 ? (p.value) : '';
+                    }
+                }
+            }
+        },
+        
+        data:[13652 ,18587 ,12944 ,12267,12802 ,12792,14093]
+    }]
+};
+    // 动态显示tootip
+    var faultByHourIndex = 0; //播放所在下标
+    var faultByHourTime = setInterval(function() { //使得tootip每隔三秒自动显示
+        myChart.dispatchAction({
+            type: 'showTip', // 根据 tooltip 的配置项显示提示框。
+            seriesIndex: 0,
+            dataIndex: faultByHourIndex
+        });
+        faultByHourIndex++;
+        if (faultByHourIndex > option.series[0].data.length) {
+            faultByHourIndex = 0;
+        }
+    }, 1400);
+ 
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+</body>
+</html>

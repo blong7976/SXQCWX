@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>陕西西安市地图</title>
+        <style type="text/css">
+            *{padding: 0;margin: 0}
+            .nav a{color: #fff;font-size: 18px;padding: 20px}
+            body,html{ width: 100%;height: 100vh; overflow: hidden;
+                /* background: #051835; */
+            }
+            .map-box{width: 75vh; height: 100vh;margin: 0 auto}
+        </style>
+    </head>
+    <body>
+
+        <div class="map-box" id="map"></div>
+        
+        <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+        <script src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript">
+            $(function() {
+                var dom = document.getElementById("map");
+                var myChart = echarts.init(dom);
+
+                var geoCoordMap = {
+                    "交通厅":[108.23472,33.885813],
+                    "西安市":[109.085595,34.186407],
+                    "宝鸡市":[107.14487, 34.369315],
+                    "咸阳市":[108.476184,34.765619],
+                    "铜川市":[108.867127,35.140527],
+                    "渭南市":[109.574647,34.796452],
+                    "汉中市":[107.028621, 33.077668],
+                    "榆林市":[109.741193, 38.290162],
+                    "延安市":[109.49081, 36.596537],
+                    "安康市":[109.029273, 32.6903],
+                    "商洛市":[109.939776, 33.868319],
+                    "韩城市":[110.45021295547484,35.475550728313074],
+                    "杨陵市":[108.06926965713501,34.2614373080117],
+                    "西咸新区":[108.65281105041504, 34.25374027803629]
+                };
+
+                baseDataList1 = [
+                            // {name: "陕西省", value: 1},
+                            {name: "西安市", value: 901},
+                            {name: "宝鸡市", value: 281},
+                            {name: "咸阳市", value: 122},
+                            {name: "铜川市", value: 50},
+                            {name: "渭南市", value: 797},
+                            {name: "汉中市", value: 191},
+                            {name: "榆林市", value: 290},
+                            {name: "延安市", value: 201},
+                            {name: "安康市", value: 114},
+                            {name: "商洛市", value: 54},
+                            {name: "韩城市", value: 56},
+                            {name: "杨陵市", value: 15},
+                            {name: "西咸新区", value: 227}
+                ]
+
+        // 转换为对象，用于移上去显示
+        var yData = [];
+        var barData = baseDataList1;
+        barData = barData.sort(function(a,b){
+            return b.value-a.value;
+        });
+        for(var j =0;j<barData.length;j++){
+            if(j<10){
+                yData.push('0'+j + barData[j].name);
+            }else{
+                yData.push(j + barData[j].name);
+            }
+        }
+
+
+var convertData = function (data) {
+    var res = [];
+    for (var i = 0; i < data.length; i++) {
+        var geoCoord = geoCoordMap[data[i].name];
+        if (geoCoord) {
+            res.push(geoCoord.concat(data[i].value));
+        }
+    }
+    return res;
+};
+$.get('shanxisheng.json', function(result) {
+      echarts.registerMap(name, result); //加载地图数据
+      option = {
+                title: [{
+                    show: true,
+                    text: '各地市企业总量',
+                    subtext: '单位：家',
+                    subtextStyle:{
+                        color:'#ffffff',
+                        lineHeight:20
+                    },
+                    textStyle: {
+                        color: '#fff',
+                        fontSize: 18
+                    },
+                    right: 0,
+                    top: 20
+                }],
+                grid: {
+                    right: 0,
+                    top: 80,
+                    bottom: 300,
+                    width: '100'
+                },
+                xAxis: {
+                    show: false
+                },
+                yAxis: {
+                    type: 'category',
+                    inverse: true,
+                    nameGap: 16,
+                    axisLine: {
+                        show: false,
+                        lineStyle: {
+                            color: '#ddd'
+                        }
+                    },
+                    axisTick: {
+                        show: false,
+                        lineStyle: {
+                            color: '#ddd'
+                        }
+                    },
+                    axisLabel: {
+                        interval: 0,
+                        margin: 100,
+                        textStyle: {
+                            color: '#fff',
+                            align: 'left',
+                            fontSize: 14
+                        },
+                        rich: {
+                            a: {
+                                color: '#fff',
+                                backgroundColor: '#f0515e',
+                                width: 20,
+                                height: 20,
+                                align: 'center',
+                                borderRadius: 2
+                            },
+                            b: {
+                                color: '#fff',
+                                backgroundColor: '#24a5cd',
+                                width: 20,
+                                height: 20,
+                                align: 'center',
+                                borderRadius: 2
+                            }
+                        },
+                        formatter: function(params) {
+                            if (parseInt(params.slice(0, 2)) < 3) {
+                                return [
+                                    '{a|' + (parseInt(params.slice(0, 2)) + 1) + '}' + '  ' + params.slice(2)
+                                ].join('\n')
+                            } else {
+                                return [
+                                    '{b|' + (parseInt(params.slice(0, 2)) + 1) + '}' + '  ' + params.slice(2)
+                                ].join('\n')
+                            }
+                        }
+                    },
+                    data: yData
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: function(params){
+                        if (params.componentSubType === "effectScatter") {
+                            var html = "地区名称: " + params.name + "<br/>";
+                            html += params.marker + "数量: " +  params.value[2] + "次<br/>";
+                            return html;
+                        }
+                    }
+                },
+    visualMap: [{
+        min: 0,
+        max: 30,
+        splitNumber: 5,
+        seriesIndex: 0,
+        show: false,
+        inRange: {
+            color: ['#eac736','#d94e5d','#50a3ba'].reverse()
+        },
+        textStyle: {
+            color: '#fff'
+        }
+    },{
+        min: 0,
+        max: 30,
+        show: false,
+        splitNumber: 5,
+        seriesIndex: 1,
+        inRange: {
+            color: ['#F5B16D', '#F09C42', '#EC870E', '#D0770B']
+        },
+        textStyle: {
+            color: '#fff'
+        }
+    }],
+    geo: {
+        type: 'map',
+        top: 80,
+        left: '60',
+        zoom: 1.2, 
+        roam: true,
+
+                    label: { // 地图上的文字
+
+                        normal: {
+
+                            show: true,
+
+                            color: 'rgba(147, 235, 248, 1)'
+
+                        },
+
+                        emphasis: {
+                            show:false,
+                            textStyle: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+
+                    itemStyle: {
+                        normal: {
+                            borderColor: 'rgba(147, 235, 248, 1)',
+                            borderWidth: 1,
+                            areaColor: {
+                                type: 'radial',
+                                x: 0.5,
+                                y: 0.5,
+                                r: 0.8,
+                                colorStops: [{
+                                    offset: 0, 
+                                    color: 'rgba(147, 235, 248, 0)' // 0% 处的颜色
+                                }, {
+                                    offset: 1, 
+                                    color: 'rgba(147, 235, 248, .2)' // 100% 处的颜色
+                                }],
+                                globalCoord: false // 缺省为 false
+                            },
+                            shadowColor: 'rgba(128, 217, 248, 1)',
+                            shadowOffsetX: -2,
+                            shadowOffsetY: 2,
+                            shadowBlur: 10
+                        },
+                        emphasis: {
+                            show: false,
+                            areaColor: '#389BB7',
+                            borderWidth: 0,
+                            textStyle: {
+                                color: '#fff',
+                            }
+                        }
+                    },
+    },
+    series: [{
+        name: 'AQI',
+        type: 'heatmap',
+        pointSize: 10, // 设置 热力图 点 的大小
+        blurSize: 10, // 设置点的 阴影半径
+        coordinateSystem: 'geo',
+        itemStyle: {
+            normal: {
+                color: 'skyblue'
+            }
+        },
+        data: convertData(baseDataList1)
+    },
+    {
+                name: 'barSer',
+                type: 'bar',
+                barMaxWidth: 16,
+                itemStyle: {
+                    normal: {
+                        color: function(params) {
+                            let colorList = [
+                                {
+                                    colorStops: [{
+                                        offset: 0,
+                                        color: '#3948e1'
+                                    }, {
+                                        offset: 1,
+                                        color: '#f0515e'
+                                    }]
+                                },
+                                {
+                                    colorStops: [{
+                                        offset: 0,
+                                        color: '#3948e1'
+                                    }, {
+                                        offset: 1,
+                                        color: '#f51706'
+                                    }]
+                                }
+                            ]
+                            if (params.dataIndex < 3) {
+                                return colorList[0]
+                            } else {
+                                return colorList[1]
+                            }
+                        },
+                        barBorderRadius: [0,15,15,0],
+                    }
+                },
+                label:{
+                    normal: {
+                        show: true,
+                        textBorderColor: '#333',
+                        textBorderWidth: 2
+                    }
+                },
+                data: barData.sort((a,b)=>{
+                    return b.value-a.value;
+                })
+            }
+    ]
+};
+
+                 myChart.setOption(option);
+})  
+
+             
+            })
+        </script>
+    </body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+
+<html>
+
+
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>陕西省各地市维修企业统计</title>
+
+    <style type="text/css">
+     *{padding: 0;margin: 0}
+    .nav a{color: #fff;font-size: 18px;padding: 20px}
+
+    body,
+
+    html {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .map-box {
+        width: 75vh;
+        height: 100vh;
+        margin: 0 auto;
+    }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="map-box" id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script src="https://gallerybox.echartsjs.com/dep/echarts/latest/echarts.min.js"></script>
+
+    <script>
+
+    $(function() {
+
+        // 攻击点的坐标位置
+
+        var chinaGeoCoordMap = {
+            "交通厅":[108.23472,33.885813],
+            "西安市":[109.085595,34.186407],
+            "宝鸡市":[107.14487, 34.369315],
+            "咸阳市":[108.476184,34.765619],
+            "铜川市":[108.867127,35.140527],
+            "渭南市":[109.574647,34.796452],
+            "汉中市":[107.028621, 33.077668],
+            "榆林市":[109.741193, 38.290162],
+            "延安市":[109.49081, 36.596537],
+            "安康市":[109.029273, 32.6903],
+            "商洛市":[109.939776, 33.868319],
+            "韩城市":[110.45021295547484,35.475550728313074],
+            "杨陵市":[108.06926965713501,34.2614373080117],
+            "西咸新区":[108.65281105041504, 34.25374027803629]
+            
+        };
+        // 攻击点显示数据（对应坐标）
+        var chinaDatas = [
+            [{ name: '交通厅', value: 1 }],
+            [{ name: '西安市', value: 5475   }],
+            [{ name: '宝鸡市', value: 2435  }],
+            [{ name: '咸阳市', value: 201  }],
+            [{ name: '铜川市', value: 174  }],
+            [{ name: '渭南市', value: 1026  }],
+            [{ name: '汉中市', value: 517 }],
+            [{ name: '榆林市', value: 1026   }],
+            [{ name: '延安市', value: 594   }],
+            [{ name: '安康市', value: 247  }],
+            [{ name: '商洛市', value: 217   }],
+            [{ name: '韩城市', value: 175 }],
+            [{ name: '杨陵市', value: 192 }], 
+            [{ name: '西咸新区', value: 2181 }]
+        ];
+
+        var chinaDatas2=[
+            { name: '西安市', value: 5475   },
+            { name: '宝鸡市', value: 2435  },
+            { name: '咸阳市', value: 201  },
+            { name: '铜川市', value: 174  },
+            { name: '渭南市', value: 1026  },
+            { name: '汉中市', value: 517 },
+            { name: '榆林市', value: 1026   },
+            { name: '延安市', value: 594   },
+            { name: '安康市', value: 247  },
+            { name: '商洛市', value: 217   },
+            { name: '韩城市', value: 175 },
+            { name: '杨陵市', value: 192 }, 
+            { name: '西咸新区', value: 2181 }
+        ]
+
+        // 转换为对象，用于移上去显示
+        var yData = [];
+        var barData = chinaDatas2;
+        barData = barData.sort(function(a,b){
+            return b.value-a.value;
+        });
+        for(var j =0;j<barData.length;j++){
+            if(j<10){
+                yData.push('0'+j + barData[j].name);
+            }else{
+                yData.push(j + barData[j].name);
+            }
+        }
+        var convertData = function(data) {
+
+            var res = [];
+
+            for (var i = 0; i < data.length; i++) {
+
+                var dataItem = data[i];
+
+                var toCoord = chinaGeoCoordMap[dataItem[0].name];
+
+                var fromCoord = [108.23472,33.885813];
+                // push进去线路开始-结束地点-经纬度
+                if (fromCoord && toCoord) {
+                    res.push([
+                    {
+                    coord: toCoord,
+                    },{
+                        coord: fromCoord,
+                        value: dataItem[0].value,
+                        name: dataItem[0].name
+                    }]);
+                }
+            }
+
+            return res;
+
+        };
+
+        var series = [];
+
+        [
+
+            ['交通厅', chinaDatas]
+
+        ].forEach(function(item, i) {
+
+            series.push(
+            {
+                type: 'lines',
+                zlevel: 1,
+                effect: {
+                    show: true,
+                    period: 4, //箭头指向速度，值越小速度越快
+                    trailLength: 0.02, //特效尾迹长度[0,1]值越大，尾迹越长重
+                    symbol: 'arrow', //箭头图标
+                    symbolSize: 10, //图标大小
+                },
+                lineStyle: {
+                    normal: {
+                        width: 1, //尾迹线条宽度
+                        opacity: 1, //尾迹线条透明度
+                        curveness: .3 //尾迹线条曲直度
+                    }
+                },
+                data: convertData(item[1])
+            }, 
+            {
+                type: 'effectScatter',
+                coordinateSystem: 'geo',
+                zlevel: 3,
+                rippleEffect: {
+                    brushType: 'stroke'
+                },
+                label: {
+                    normal: {
+                        show: true,
+                        position: 'right',
+                        formatter: '{b}',
+                        color: "#fff"
+                    }
+                },
+                symbolSize: 10,
+                itemStyle: {
+                    normal: {
+                        color: "#fff"
+                    }
+                },
+                data: item[1].map(function(dataItem) {
+                    return {
+                        name: dataItem[0].name,
+                        value: chinaGeoCoordMap[dataItem[0].name].concat([dataItem[0].value])
+                    };
+                }),
+
+            }, 
+            { 
+
+                type: 'scatter',
+
+                coordinateSystem: 'geo',
+
+                zlevel: 1,
+
+                rippleEffect: {
+
+                    period: 4,
+
+                    brushType: 'stroke',
+
+                    scale: 4
+
+                },
+
+                label: {
+
+                    normal: {
+
+                        show: true,
+
+                        position: 'right',
+
+                        color: '#0f0',
+
+                        formatter: '{b}',
+
+                        textStyle: {
+
+                            color: "#0f0"
+
+                        }
+
+                    },
+
+                    emphasis: {
+
+                        show: true,
+
+                        color: "#f60"
+
+                    }
+
+                },
+
+                symbol: 'pin',
+
+                symbolSize: 50,
+
+                data: [{
+
+                    name: item[0],
+
+                    value: chinaGeoCoordMap[item[0]].concat([10]),
+
+                }],
+
+             },
+             {
+                name: 'barSer',
+                type: 'bar',
+                barMaxWidth: 16,
+                itemStyle: {
+                    normal: {
+                        color: function(params) {
+                            let colorList = [
+                                {
+                                    colorStops: [{
+                                        offset: 0,
+                                        color: '#3948e1'
+                                    }, {
+                                        offset: 1,
+                                        color: '#f0515e'
+                                    }]
+                                },
+                                {
+                                    colorStops: [{
+                                        offset: 0,
+                                        color: '#3948e1'
+                                    }, {
+                                        offset: 1,
+                                        color: '#f51706'
+                                    }]
+                                }
+                            ]
+                            if (params.dataIndex < 3) {
+                                return colorList[0]
+                            } else {
+                                return colorList[1]
+                            }
+                        },
+                        barBorderRadius: [0,15,15,0],
+                    }
+                },
+                label:{
+                    normal: {
+                        show: true,
+                        textBorderColor: '#333',
+                        textBorderWidth: 2
+                    }
+                },
+                data: barData.sort((a,b)=>{
+                    return b.value-a.value;
+                })
+            }
+            );
+
+        });
+
+
+
+
+
+
+        //初始化实例
+
+        var myChart = echarts.init(document.getElementById('map'));
+
+        var option = null;
+
+        // myChart.showLoading(); //加载动画
+
+
+
+        $.get('shanxisheng.json', function(result) {
+
+            // myChart.hideLoading(); //关闭加载动画
+
+            echarts.registerMap(name, result); //加载地图数据
+
+            var option = {
+                title: [{
+                    show: true,
+                    text: '今日各地市维修量',
+                    subtext: '单位：次',
+                    subtextStyle:{
+                        color:'#ffffff',
+                        lineHeight:20
+                    },
+                    textStyle: {
+                        color: '#fff',
+                        fontSize: 18
+                    },
+                    right: 0,
+                    top: 20
+                }],
+                grid: {
+                    right: 0,
+                    top: 80,
+                    bottom: 300,
+                    width: '100'
+                },
+                xAxis: {
+                    show: false
+                },
+                yAxis: {
+                    type: 'category',
+                    inverse: true,
+                    nameGap: 16,
+                    axisLine: {
+                        show: false,
+                        lineStyle: {
+                            color: '#ddd'
+                        }
+                    },
+                    axisTick: {
+                        show: false,
+                        lineStyle: {
+                            color: '#ddd'
+                        }
+                    },
+                    axisLabel: {
+                        interval: 0,
+                        margin: 100,
+                        textStyle: {
+                            color: '#fff',
+                            align: 'left',
+                            fontSize: 14
+                        },
+                        rich: {
+                            a: {
+                                color: '#fff',
+                                backgroundColor: '#f0515e',
+                                width: 20,
+                                height: 20,
+                                align: 'center',
+                                borderRadius: 2
+                            },
+                            b: {
+                                color: '#fff',
+                                backgroundColor: '#24a5cd',
+                                width: 20,
+                                height: 20,
+                                align: 'center',
+                                borderRadius: 2
+                            }
+                        },
+                        formatter: function(params) {
+                            if (parseInt(params.slice(0, 2)) < 3) {
+                                return [
+                                    '{a|' + (parseInt(params.slice(0, 2)) + 1) + '}' + '  ' + params.slice(2)
+                                ].join('\n')
+                            } else {
+                                return [
+                                    '{b|' + (parseInt(params.slice(0, 2)) + 1) + '}' + '  ' + params.slice(2)
+                                ].join('\n')
+                            }
+                        }
+                    },
+                    data: yData
+                },
+                tooltip : {
+                    trigger: 'item',
+                    formatter: function(params){
+                        if (params.componentSubType === "effectScatter") {
+                            var html = "地区名称: " + params.name + "<br/>";
+                            html += params.marker + "数量: " +  params.value[2] + "次<br/>";
+                            return html;
+                        }
+                    }
+                },
+                visualMap: { //图例值控制
+
+                    min: 0,
+
+                    max: 40000,
+
+                    calculable: false,
+
+                    show: false,
+
+                    color: ['#f44336','#00eaff', '#ffde00', '#f44336'],
+
+                    textStyle: {
+                        color: '#fff'
+                    }
+
+                },
+
+                geo: {
+                    type: 'map',
+                    roam: true,//是否允许缩放
+                    top: 80,
+                    left: '60',
+                    zoom: 1.2, //默认显示级别
+                    scaleLimit: {
+                        min: 0,
+                        max: 10
+                    }, //缩放级别
+                    label: { // 地图上的文字
+                        normal: {
+                            show: false,
+                            color: '#fff'
+                        },
+                        emphasis: {
+                            show:false,
+                            textStyle: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    itemStyle: {
+                        normal: {
+                            borderColor: 'rgba(147, 235, 248, 1)',
+                            borderWidth: 1,
+                            areaColor: {
+                                type: 'radial',
+                                x: 0.5,
+                                y: 0.5,
+                                r: 0.8,
+                                colorStops: [{
+                                    offset: 0, 
+                                    color: 'rgba(147, 235, 248, 0)' // 0% 处的颜色
+                                }, {
+                                    offset: 1, 
+                                    color: 'rgba(147, 235, 248, .2)' // 100% 处的颜色
+                                }],
+                                globalCoord: false // 缺省为 false
+                            },
+                            shadowColor: 'rgba(128, 217, 248, 1)',
+                            shadowOffsetX: -2,
+                            shadowOffsetY: 2,
+                            shadowBlur: 10
+                        },
+                        emphasis: {
+                            show: false,
+                            borderWidth: 0,
+                            textStyle: {
+                                color: '#fff',
+                            }
+                        }
+                    },
+                },
+                series: series
+            };
+            myChart.setOption(option, true);
+            window.addEventListener("resize", function() { 
+                myChart.resize();
+            });
+            myChart.on('click', function(params) {
+                console.log(params);
+            });
+        });
+
+    })
+
+    </script>
+
+</body>
+
+</html>
